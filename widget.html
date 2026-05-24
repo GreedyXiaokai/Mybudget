@@ -2,460 +2,277 @@
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>💰 記帳本 Widget</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Noto+Sans+TC:wght@300;400;700&display=swap" rel="stylesheet">
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
-body {
+html, body {
+  width: 100%; height: 100%;
   font-family: 'Noto Sans TC', sans-serif;
-  background: #0f2017;
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 12px;
+  background: linear-gradient(135deg, #0f2017 0%, #1b4332 55%, #2d6a4f 100%);
+  color: #fff;
+  overflow: hidden;
 }
 
 .widget {
-  width: 100%;
-  max-width: 380px;
-  background: linear-gradient(135deg, #0f2017 0%, #1b4332 50%, #2d6a4f 100%);
-  border-radius: 24px;
-  padding: 20px;
-  box-shadow: 0 12px 40px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.08);
+  width: 100%; height: 100%;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
   position: relative;
   overflow: hidden;
-  animation: fadeIn 0.6s ease;
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(8px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-/* 背景裝飾圓 */
+/* 背景裝飾 */
 .widget::before {
   content: '';
   position: absolute;
-  top: -60px; right: -60px;
-  width: 200px; height: 200px;
+  top: -50px; right: -50px;
+  width: 180px; height: 180px;
   border-radius: 50%;
   background: rgba(255,255,255,0.04);
   pointer-events: none;
 }
-.widget::after {
-  content: '';
-  position: absolute;
-  bottom: -40px; left: -40px;
-  width: 160px; height: 160px;
-  border-radius: 50%;
-  background: rgba(255,255,255,0.03);
-  pointer-events: none;
-}
 
 /* Header */
-.widget-header {
+.w-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
 }
-.widget-title {
-  font-size: 13px;
-  font-weight: 700;
-  color: rgba(255,255,255,0.55);
-  letter-spacing: 1px;
-  text-transform: uppercase;
-}
-.widget-month {
-  font-family: 'DM Mono', monospace;
-  font-size: 12px;
-  color: rgba(255,255,255,0.4);
-}
+.w-title { font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.5); letter-spacing: 1px; }
+.w-month { font-family: 'DM Mono', monospace; font-size: 11px; color: rgba(255,255,255,0.35); }
 
 /* 總餘額 */
-.balance-section { margin-bottom: 18px; }
-.balance-label {
-  font-size: 10px;
-  color: rgba(255,255,255,0.4);
-  letter-spacing: 0.5px;
-  margin-bottom: 4px;
-}
-.balance-value {
+.w-balance-label { font-size: 9px; color: rgba(255,255,255,0.4); letter-spacing: 0.5px; }
+.w-balance {
   font-family: 'DM Mono', monospace;
-  font-size: 38px;
-  font-weight: 500;
-  color: #fff;
-  letter-spacing: -1px;
-  line-height: 1;
+  font-size: 32px; font-weight: 500;
+  color: #fff; letter-spacing: -1px; line-height: 1;
 }
-.balance-value.negative { color: #ff6b6b; }
+.w-balance.neg { color: #ff8fa3; }
 
-/* 收入支出區塊 */
-.stats-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  margin-bottom: 14px;
+/* 收入支出 */
+.w-stats {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
 }
-.stat-box {
-  background: rgba(255,255,255,0.08);
-  border-radius: 14px;
-  padding: 12px 14px;
-  backdrop-filter: blur(4px);
+.w-stat {
+  background: rgba(255,255,255,0.09);
+  border-radius: 10px; padding: 8px 10px;
   border: 1px solid rgba(255,255,255,0.06);
 }
-.stat-box-label {
-  font-size: 10px;
-  color: rgba(255,255,255,0.45);
-  margin-bottom: 5px;
-  letter-spacing: 0.3px;
-}
-.stat-box-value {
-  font-family: 'DM Mono', monospace;
-  font-size: 18px;
-  font-weight: 500;
-}
-.stat-box-value.income { color: #95d5b2; }
-.stat-box-value.expense { color: #ff8fa3; }
+.w-stat-label { font-size: 9px; color: rgba(255,255,255,0.4); margin-bottom: 3px; }
+.w-stat-val { font-family: 'DM Mono', monospace; font-size: 15px; font-weight: 500; }
+.w-stat-val.income { color: #95d5b2; }
+.w-stat-val.expense { color: #ff8fa3; }
 
-/* 帳戶列表 */
-.accounts-section { margin-bottom: 14px; }
-.accounts-label {
-  font-size: 10px;
-  color: rgba(255,255,255,0.35);
-  letter-spacing: 0.5px;
-  margin-bottom: 8px;
+/* 帳戶 */
+.w-accounts-label { font-size: 9px; color: rgba(255,255,255,0.35); letter-spacing: 0.5px; }
+.w-account {
+  display: flex; align-items: center; gap: 7px;
+  padding: 5px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  font-size: 11px;
 }
-.account-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 7px 0;
-  border-bottom: 1px solid rgba(255,255,255,0.06);
-}
-.account-row:last-child { border-bottom: none; }
-.account-dot {
-  width: 7px; height: 7px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-.account-name {
-  font-size: 12px;
-  color: rgba(255,255,255,0.6);
-  flex: 1;
-}
-.account-bal {
-  font-family: 'DM Mono', monospace;
-  font-size: 13px;
-  font-weight: 500;
-  color: rgba(255,255,255,0.85);
-}
-.account-bal.neg { color: #ff8fa3; }
+.w-account:last-child { border-bottom: none; }
+.w-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.w-aname { flex: 1; color: rgba(255,255,255,0.6); }
+.w-abal { font-family: 'DM Mono', monospace; font-size: 12px; color: rgba(255,255,255,0.85); }
+.w-abal.neg { color: #ff8fa3; }
 
 /* Footer */
-.widget-footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding-top: 10px;
+.w-footer {
+  margin-top: auto;
+  display: flex; justify-content: space-between; align-items: center;
+  padding-top: 6px;
   border-top: 1px solid rgba(255,255,255,0.07);
 }
-.update-time {
-  font-size: 10px;
-  color: rgba(255,255,255,0.25);
-  font-family: 'DM Mono', monospace;
-}
-.refresh-btn {
-  font-size: 10px;
-  color: rgba(255,255,255,0.35);
-  background: none;
-  border: 1px solid rgba(255,255,255,0.12);
-  border-radius: 99px;
-  padding: 3px 10px;
-  cursor: pointer;
-  transition: all 0.2s;
+.w-time { font-size: 9px; color: rgba(255,255,255,0.25); font-family: 'DM Mono', monospace; }
+.w-btn {
+  font-size: 9px; color: rgba(255,255,255,0.35);
+  background: none; border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 99px; padding: 2px 8px; cursor: pointer;
   font-family: 'Noto Sans TC', sans-serif;
 }
-.refresh-btn:hover {
-  background: rgba(255,255,255,0.08);
-  color: rgba(255,255,255,0.6);
-}
+
+/* 狀態訊息 */
+.w-msg { font-size: 12px; color: rgba(255,255,255,0.4); text-align: center; padding: 20px 0; }
+.w-err { font-size: 11px; color: #ff8fa3; text-align: center; padding: 12px 0; line-height: 1.6; }
 
 /* 設定面板 */
-.config-panel {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.7);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 16px;
-  z-index: 999;
+.cfg-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.85);
+  display: flex; align-items: center; justify-content: center;
+  padding: 16px; z-index: 999;
 }
-.config-box {
-  background: #1a1a1a;
-  border: 1px solid #333;
-  border-radius: 16px;
-  padding: 24px;
-  width: 100%;
-  max-width: 360px;
+.cfg-box {
+  background: #1a1a1a; border: 1px solid #333;
+  border-radius: 14px; padding: 20px; width: 100%;
 }
-.config-box h2 {
-  font-size: 16px;
-  color: #fff;
-  margin-bottom: 16px;
-  font-weight: 700;
+.cfg-box h2 { font-size: 14px; color: #fff; margin-bottom: 14px; font-weight: 700; }
+.cfg-label { font-size: 10px; color: #888; margin-bottom: 3px; display: block; }
+.cfg-input {
+  width: 100%; background: #0f0f0f; border: 1px solid #333;
+  border-radius: 7px; padding: 8px 10px; color: #fff; font-size: 12px;
+  margin-bottom: 10px; font-family: 'DM Mono', monospace;
 }
-.config-label {
-  font-size: 11px;
-  color: #888;
-  margin-bottom: 4px;
-  display: block;
+.cfg-input:focus { outline: none; border-color: #52b788; }
+.cfg-btns { display: flex; gap: 8px; }
+.cfg-btn {
+  flex: 1; padding: 9px; border: none; border-radius: 7px;
+  font-size: 12px; cursor: pointer; font-family: 'Noto Sans TC', sans-serif; font-weight: 500;
 }
-.config-input {
-  width: 100%;
-  background: #0f0f0f;
-  border: 1px solid #333;
-  border-radius: 8px;
-  padding: 9px 12px;
-  color: #fff;
-  font-size: 13px;
-  margin-bottom: 12px;
-  font-family: 'DM Mono', monospace;
-}
-.config-input:focus { outline: none; border-color: #52b788; }
-.config-btns { display: flex; gap: 8px; margin-top: 4px; }
-.config-btn {
-  flex: 1; padding: 10px; border: none; border-radius: 8px;
-  font-size: 13px; cursor: pointer; font-family: 'Noto Sans TC', sans-serif;
-  font-weight: 500;
-}
-.config-btn.primary { background: #2d6a4f; color: #fff; }
-.config-btn.primary:hover { background: #40916c; }
-.config-btn.secondary { background: #2a2a2a; color: #888; border: 1px solid #333; }
-
-/* Loading / Error */
-.status-msg {
-  text-align: center;
-  padding: 20px 0;
-  color: rgba(255,255,255,0.4);
-  font-size: 13px;
-}
-.error-msg {
-  text-align: center;
-  padding: 16px 0;
-  color: #ff8fa3;
-  font-size: 12px;
-  line-height: 1.6;
-}
-.setup-hint {
-  text-align: center;
-  padding: 16px 0;
-  color: rgba(255,255,255,0.4);
-  font-size: 12px;
-  line-height: 1.8;
-}
-.setup-btn {
-  display: inline-block;
-  margin-top: 8px;
-  padding: 8px 18px;
-  background: rgba(255,255,255,0.1);
-  border: 1px solid rgba(255,255,255,0.15);
-  border-radius: 99px;
-  color: rgba(255,255,255,0.7);
-  font-size: 12px;
-  cursor: pointer;
-  font-family: 'Noto Sans TC', sans-serif;
-}
+.cfg-btn.ok { background: #2d6a4f; color: #fff; }
+.cfg-btn.cancel { background: #2a2a2a; color: #888; border: 1px solid #333; }
 </style>
 </head>
 <body>
 
-<div class="widget" id="widget">
-  <div class="widget-header">
-    <div class="widget-title">💰 記帳本</div>
-    <div class="widget-month" id="w-month"></div>
+<div class="widget">
+  <div class="w-header">
+    <div class="w-title">💰 記帳本</div>
+    <div class="w-month" id="w-month"></div>
   </div>
-  <div id="w-content">
-    <div class="status-msg">載入中…</div>
+
+  <div id="w-body">
+    <div class="w-msg">載入中…</div>
   </div>
-  <div class="widget-footer">
-    <div class="update-time" id="w-update">--</div>
-    <button class="refresh-btn" onclick="loadData()">重新整理</button>
-    <button class="refresh-btn" onclick="openConfig()">⚙️ 設定</button>
+
+  <div class="w-footer">
+    <div class="w-time" id="w-time">--</div>
+    <div style="display:flex;gap:6px">
+      <button class="w-btn" onclick="loadData()">🔄</button>
+      <button class="w-btn" onclick="openCfg()">⚙️</button>
+    </div>
   </div>
 </div>
 
 <!-- 設定面板 -->
-<div class="config-panel" id="config-panel" style="display:none">
-  <div class="config-box">
-    <h2>⚙️ 雲端同步設定</h2>
-    <label class="config-label">Apps Script 網址</label>
-    <input class="config-input" id="cfg-url" placeholder="https://script.google.com/...">
-    <label class="config-label">密鑰</label>
-    <input class="config-input" id="cfg-key" placeholder="my_secret_123" type="password">
-    <div class="config-btns">
-      <button class="config-btn secondary" onclick="closeConfig()">取消</button>
-      <button class="config-btn primary" onclick="saveConfig()">儲存並載入</button>
+<div class="cfg-overlay" id="cfg" style="display:none">
+  <div class="cfg-box">
+    <h2>⚙️ 設定</h2>
+    <label class="cfg-label">Apps Script 網址</label>
+    <input class="cfg-input" id="cfg-url" placeholder="https://script.google.com/...">
+    <label class="cfg-label">密鑰</label>
+    <input class="cfg-input" id="cfg-key" placeholder="my_secret_123" type="password">
+    <div class="cfg-btns">
+      <button class="cfg-btn cancel" onclick="closeCfg()">取消</button>
+      <button class="cfg-btn ok" onclick="saveCfg()">儲存</button>
     </div>
   </div>
 </div>
 
 <script>
 const DEFAULT_FX = { TWD:1, USD:32.5, JPY:0.22, EUR:35, CNY:4.5, HKD:4.1, KRW:0.024, GBP:41, AUD:21, SGD:24 };
-const TS_TOLERANCE_MS = 5 * 60 * 1000;
 
-// ── 月份顯示 ──
 const now = new Date();
 document.getElementById('w-month').textContent =
   now.getFullYear() + '/' + String(now.getMonth()+1).padStart(2,'0');
 
-function fmt(n){
-  return (n<0?'-':'')+'$'+Math.abs(Math.round(n)).toLocaleString('zh-TW');
+function fmt(n){ return (n<0?'-':'')+'$'+Math.abs(Math.round(n)).toLocaleString('zh-TW'); }
+function thisMonth(){ return now.toISOString().slice(0,7); }
+
+function getCfg(){ return { url: localStorage.getItem('wgt_url')||'', key: localStorage.getItem('wgt_key')||'' }; }
+function openCfg(){
+  const c = getCfg();
+  document.getElementById('cfg-url').value = c.url;
+  document.getElementById('cfg-key').value = c.key;
+  document.getElementById('cfg').style.display = 'flex';
 }
-function thisMonth(){
-  return now.toISOString().slice(0,7);
+function closeCfg(){ document.getElementById('cfg').style.display = 'none'; }
+function saveCfg(){
+  localStorage.setItem('wgt_url', document.getElementById('cfg-url').value.trim());
+  localStorage.setItem('wgt_key', document.getElementById('cfg-key').value.trim());
+  closeCfg(); loadData();
 }
 
-// ── Config ──
-function getConfig(){
-  return {
-    url: localStorage.getItem('widget_sync_url')||'',
-    key: localStorage.getItem('widget_sync_key')||''
-  };
-}
-function openConfig(){
-  const cfg = getConfig();
-  document.getElementById('cfg-url').value = cfg.url;
-  document.getElementById('cfg-key').value = cfg.key;
-  document.getElementById('config-panel').style.display = 'flex';
-}
-function closeConfig(){
-  document.getElementById('config-panel').style.display = 'none';
-}
-function saveConfig(){
-  localStorage.setItem('widget_sync_url', document.getElementById('cfg-url').value.trim());
-  localStorage.setItem('widget_sync_key', document.getElementById('cfg-key').value.trim());
-  closeConfig();
-  loadData();
-}
-
-// ── 計算 ──
-function calcMonthStats(state){
+function calcStats(state){
   const month = thisMonth();
   const txs = state.transactions || [];
-  const fxRates = state.fxRates || DEFAULT_FX;
-
-  function toTWD(amount, currency){
-    return amount * (fxRates[currency] || DEFAULT_FX[currency] || 1);
-  }
+  const fx = state.fxRates || DEFAULT_FX;
+  function toTWD(a, c){ return a * (fx[c] || DEFAULT_FX[c] || 1); }
 
   let income = 0, expense = 0;
   txs.forEach(t => {
     if(!t.date.startsWith(month)) return;
-    if(t.type === 'income')  income  += toTWD(t.amount, t.currency||'TWD');
-    if(t.type === 'expense') expense += toTWD(t.amount, t.currency||'TWD');
+    if(t.type==='income')  income  += toTWD(t.amount, t.currency||'TWD');
+    if(t.type==='expense') expense += toTWD(t.amount, t.currency||'TWD');
   });
 
-  let totalBalance = 0;
-  const accounts = (state.accounts||[]).filter(a=>!a.excluded);
-  accounts.forEach(a => {
-    let bal = txs.reduce((sum, t) => {
-      if(t.accountId !== a.id) return sum;
-      return sum + (t.type==='income' ? toTWD(t.amount, t.currency||'TWD') : -toTWD(t.amount, t.currency||'TWD'));
+  let total = 0;
+  const accs = (state.accounts||[]).filter(a=>!a.excluded);
+  accs.forEach(a => {
+    txs.forEach(t => {
+      if(t.accountId!==a.id) return;
+      total += t.type==='income' ? toTWD(t.amount, t.currency||'TWD') : -toTWD(t.amount, t.currency||'TWD');
+    });
+  });
+
+  const accBals = (state.accounts||[]).map(a => {
+    let bal = txs.reduce((s,t) => {
+      if(t.accountId!==a.id) return s;
+      return s + (t.type==='income' ? t.amount : -t.amount);
     }, 0);
-    totalBalance += bal;
+    return { name: a.name, color: a.color, balance: bal, excluded: a.excluded };
   });
 
-  // 所有帳戶餘額（含excluded）
-  const accountBalances = (state.accounts||[]).map(a => {
-    const ccy = a.currency || 'TWD';
-    const bal = txs.reduce((sum, t) => {
-      if(t.accountId !== a.id) return sum;
-      return sum + (t.type==='income' ? t.amount : -t.amount);
-    }, 0);
-    return { name: a.name, color: a.color, balance: bal, currency: ccy, excluded: a.excluded };
-  });
-
-  return { income, expense, totalBalance, accountBalances };
+  return { income, expense, total, accBals };
 }
 
-// ── 渲染 ──
 function render(state){
-  const { income, expense, totalBalance, accountBalances } = calcMonthStats(state);
-  const isNeg = totalBalance < 0;
+  const { income, expense, total, accBals } = calcStats(state);
+  const accsHtml = accBals.map(a => `
+    <div class="w-account">
+      <div class="w-dot" style="background:${a.color}"></div>
+      <div class="w-aname">${a.name}${a.excluded?' <span style="opacity:.4;font-size:9px">(排除)</span>':''}</div>
+      <div class="w-abal${a.balance<0?' neg':''}">${fmt(a.balance)}</div>
+    </div>`).join('');
 
-  const accsHtml = accountBalances.map(a => `
-    <div class="account-row">
-      <div class="account-dot" style="background:${a.color}"></div>
-      <div class="account-name">${a.name}${a.excluded?' <span style="font-size:9px;opacity:.5">(不計入)</span>':''}</div>
-      <div class="account-bal${a.balance<0?' neg':''}">${fmt(a.balance)}</div>
+  document.getElementById('w-body').innerHTML = `
+    <div>
+      <div class="w-balance-label">總餘額（TWD）</div>
+      <div class="w-balance${total<0?' neg':''}">${fmt(total)}</div>
     </div>
-  `).join('');
-
-  document.getElementById('w-content').innerHTML = `
-    <div class="balance-section">
-      <div class="balance-label">總餘額（TWD，不含排除帳戶）</div>
-      <div class="balance-value${isNeg?' negative':''}">${fmt(totalBalance)}</div>
-    </div>
-    <div class="stats-row">
-      <div class="stat-box">
-        <div class="stat-box-label">▲ 本月收入</div>
-        <div class="stat-box-value income">${fmt(income)}</div>
+    <div class="w-stats">
+      <div class="w-stat">
+        <div class="w-stat-label">▲ 本月收入</div>
+        <div class="w-stat-val income">${fmt(income)}</div>
       </div>
-      <div class="stat-box">
-        <div class="stat-box-label">▼ 本月支出</div>
-        <div class="stat-box-value expense">${fmt(expense)}</div>
+      <div class="w-stat">
+        <div class="w-stat-label">▼ 本月支出</div>
+        <div class="w-stat-val expense">${fmt(expense)}</div>
       </div>
     </div>
-    <div class="accounts-section">
-      <div class="accounts-label">各帳戶餘額</div>
-      ${accsHtml}
-    </div>
+    <div class="w-accounts-label">各帳戶餘額</div>
+    <div>${accsHtml}</div>
   `;
-
-  const t = new Date().toLocaleTimeString('zh-TW');
-  document.getElementById('w-update').textContent = '更新 ' + t;
+  document.getElementById('w-time').textContent = '更新 ' + new Date().toLocaleTimeString('zh-TW');
 }
 
-// ── 抓資料 ──
 async function loadData(){
-  const cfg = getConfig();
+  const cfg = getCfg();
   if(!cfg.url){
-    document.getElementById('w-content').innerHTML = `
-      <div class="setup-hint">
-        尚未設定雲端同步<br>請先在主記帳本設定 Apps Script<br>再點下方按鈕填入相同網址與密鑰
-        <br><button class="setup-btn" onclick="openConfig()">⚙️ 立即設定</button>
-      </div>`;
+    document.getElementById('w-body').innerHTML =
+      '<div class="w-err">尚未設定<br>點右下 ⚙️ 填入網址與密鑰</div>';
     return;
   }
-
-  document.getElementById('w-content').innerHTML = '<div class="status-msg">🔄 載入中…</div>';
-
+  document.getElementById('w-body').innerHTML = '<div class="w-msg">🔄 載入中…</div>';
   try {
     const ts = Date.now();
     const res = await fetch(cfg.url + '?key=' + encodeURIComponent(cfg.key) + '&ts=' + ts);
     const json = await res.json();
-    if(json.ok && json.data){
-      const state = JSON.parse(json.data);
-      render(state);
-    } else if(!json.data){
-      document.getElementById('w-content').innerHTML =
-        '<div class="error-msg">雲端尚無資料<br>請先在主記帳本上傳一次</div>';
-    } else {
-      document.getElementById('w-content').innerHTML =
-        '<div class="error-msg">❌ ' + (json.error||'載入失敗') + '</div>';
-    }
+    if(json.ok && json.data){ render(JSON.parse(json.data)); }
+    else if(!json.data){ document.getElementById('w-body').innerHTML = '<div class="w-err">雲端尚無資料<br>請先在主記帳本上傳</div>'; }
+    else { document.getElementById('w-body').innerHTML = '<div class="w-err">❌ '+(json.error||'失敗')+'</div>'; }
   } catch(e){
-    document.getElementById('w-content').innerHTML =
-      '<div class="error-msg">❌ 網路錯誤<br>' + e.message + '</div>';
+    document.getElementById('w-body').innerHTML = '<div class="w-err">❌ 網路錯誤<br>'+e.message+'</div>';
   }
 }
 
-// 自動每 5 分鐘更新
 loadData();
 setInterval(loadData, 5 * 60 * 1000);
 </script>
