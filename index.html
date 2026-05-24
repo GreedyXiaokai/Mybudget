@@ -956,8 +956,8 @@ function load(){
 //  UTILS
 // ════════════════════════════════════════════
 function fmt(n){ return (n<0?'-':'')+'$'+Math.abs(n).toLocaleString('zh-TW'); }
-function today(){ return new Date().toISOString().slice(0,10); }
-function thisMonth(){ return new Date().toISOString().slice(0,7); }
+function today(){ const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function thisMonth(){ const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'); }
 function genId(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,5); }
 function getAccount(id){ return state.accounts.find(a=>a.id===id); }
 
