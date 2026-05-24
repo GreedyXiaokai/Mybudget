@@ -31,6 +31,7 @@ document.getElementById('pwa-manifest').href = URL.createObjectURL(blob);
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
 :root {
   --bg: #f5f3ef; --bg2: #ede9e1; --card: #ffffff;
@@ -817,6 +818,7 @@ select option { background: var(--card); }
           <button class="btn btn-primary" onclick="exportAll()">📤 匯出全部</button>
           <button class="btn btn-secondary" onclick="exportSettings()">⚙️ 匯出設定</button>
           <button class="btn btn-secondary" onclick="exportTransactions()">📋 匯出交易</button>
+          <button class="btn btn-secondary" onclick="exportExcel()">📊 匯出 Excel</button>
           <label class="btn btn-secondary" style="cursor:pointer">📥 匯入資料<input type="file" accept=".json" onchange="importData(event)" style="display:none"></label>
         </div>
       </div>
@@ -869,6 +871,7 @@ select option { background: var(--card); }
       <button class="btn btn-primary" onclick="exportAll();closeModal('export-modal')">📤 匯出全部</button>
       <button class="btn btn-secondary" onclick="exportSettings();closeModal('export-modal')">⚙️ 匯出設定</button>
       <button class="btn btn-secondary" onclick="exportTransactions();closeModal('export-modal')">📋 匯出交易</button>
+      <button class="btn btn-secondary" onclick="exportExcel();closeModal('export-modal')">📊 匯出 Excel</button>
       <label class="btn btn-secondary" style="cursor:pointer">📥 匯入資料<input type="file" accept=".json" onchange="importData(event);closeModal('export-modal')" style="display:none"></label>
     </div>
     <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('export-modal')">關閉</button></div>
@@ -1823,6 +1826,54 @@ function deleteDateRange(){
 function exportAll(){ download('記帳本_全部資料.json',JSON.stringify({type:'all',version:3,exportedAt:new Date().toISOString(),...state},null,2)); }
 function exportSettings(){ download('記帳本_設定.json',JSON.stringify({type:'settings',version:4,exportedAt:new Date().toISOString(),accounts:state.accounts,budgets:state.budgets,theme:state.theme,ccBillingDay:state.ccBillingDay,fixedItems:state.fixedItems,balanceWarnThreshold:state.balanceWarnThreshold,balanceDangerThreshold:state.balanceDangerThreshold,fxRates:state.fxRates},null,2)); }
 function exportTransactions(){ download('記帳本_交易記錄.json',JSON.stringify({type:'transactions',version:3,exportedAt:new Date().toISOString(),transactions:state.transactions},null,2)); }
+
+function exportExcel(){
+  if(!state.transactions.length){ alert('沒有交易記錄可匯出'); return; }
+  const wb = XLSX.utils.book_new();
+
+  // ── 工作表1：交易明細 ──
+  const txHeaders = ['日期','類型','類別','帳戶','金額','幣別','付款方式','備註'];
+  const txRows = [...state.transactions]
+    .sort((a,b)=>a.date.localeCompare(b.date))
+    .map(t=>{
+      const acc = getAccount(t.accountId);
+      const isTransfer = t.note&&(t.note.startsWith('[轉入]')||t.note.startsWith('[轉出]')||t.note.startsWith('[手續費]'));
+      const typeLabel = isTransfer?'轉帳':(t.type==='income'?'收入':'支出');
+      const payLabel = t.payment==='cash'?'現金':t.payment==='credit'?'信用卡':'';
+      const amt = t.type==='income' ? t.amount : -t.amount;
+      return [t.date, typeLabel, t.category, acc?acc.name:'未知', amt, t.currency||'TWD', payLabel, t.note||''];
+    });
+  const txSheet = XLSX.utils.aoa_to_sheet([txHeaders, ...txRows]);
+  // 設定欄寬
+  txSheet['!cols'] = [{wch:12},{wch:8},{wch:12},{wch:14},{wch:12},{wch:8},{wch:10},{wch:24}];
+  XLSX.utils.book_append_sheet(wb, txSheet, '交易明細');
+
+  // ── 工作表2：月份摘要 ──
+  const monthMap = {};
+  state.transactions.forEach(t=>{
+    const m = t.date.slice(0,7);
+    if(!monthMap[m]) monthMap[m]={income:0,expense:0};
+    if(t.type==='income') monthMap[m].income += t.amount;
+    else if(t.type==='expense') monthMap[m].expense += t.amount;
+  });
+  const sumHeaders = ['月份','收入','支出','結餘'];
+  const sumRows = Object.keys(monthMap).sort().map(m=>[
+    m, monthMap[m].income, monthMap[m].expense, monthMap[m].income - monthMap[m].expense
+  ]);
+  const sumSheet = XLSX.utils.aoa_to_sheet([sumHeaders, ...sumRows]);
+  sumSheet['!cols'] = [{wch:10},{wch:12},{wch:12},{wch:12}];
+  XLSX.utils.book_append_sheet(wb, sumSheet, '月份摘要');
+
+  // ── 工作表3：帳戶餘額 ──
+  const accHeaders = ['帳戶','幣別','餘額'];
+  const accRows = state.accounts.map(a=>[a.name, a.currency||'TWD', calcBalance(a.id)]);
+  const accSheet = XLSX.utils.aoa_to_sheet([accHeaders, ...accRows]);
+  accSheet['!cols'] = [{wch:16},{wch:8},{wch:14}];
+  XLSX.utils.book_append_sheet(wb, accSheet, '帳戶餘額');
+
+  const date = new Date().toISOString().slice(0,10);
+  XLSX.writeFile(wb, `記帳本_${date}.xlsx`);
+}
 
 function download(filename,text){
   const a=document.createElement('a');
