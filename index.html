@@ -139,8 +139,11 @@ body { font-family: 'Noto Sans TC', sans-serif; background: var(--bg); color: va
   .form-group.full { grid-column: 1; }
   .page-title { font-size: 18px; margin-bottom: 16px; }
   .card { padding: 16px; }
-  .tx-row { grid-template-columns: 88px 1fr 90px 26px 26px !important; gap: 6px; }
+  .tx-row { grid-template-columns: 72px 1fr 82px 26px 26px !important; gap: 6px; }
+  .tx-row > span:nth-child(3) { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
   .tx-type-col, .tx-account-col { display: none !important; }
+  .tx-date-full { display: none !important; }
+  .tx-date-short { display: inline !important; }
   .cc-grid { grid-template-columns: 1fr !important; }
   .account-edit-row { grid-template-columns: 28px 1fr auto auto !important; }
 
@@ -228,6 +231,7 @@ body { font-family: 'Noto Sans TC', sans-serif; background: var(--bg); color: va
 .tx-row:hover { background: var(--bg); }
 .tx-row.header { font-size: 11px; color: var(--text3); font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; padding: 6px 14px; }
 .tx-date { color: var(--text2); font-family: 'DM Mono', monospace; font-size: 12px; }
+.tx-date-short { display: none; }
 .tx-type-badge { font-size: 11px; padding: 2px 8px; border-radius: 99px; font-weight: 500; white-space: nowrap; }
 .tx-type-badge.income { background: var(--accent-light); color: var(--accent); }
 .tx-type-badge.expense { background: var(--danger-light); color: var(--danger); }
@@ -1408,7 +1412,7 @@ function renderTxRows(container,txs,showDateSep=false){
     const ccyBadge=ccy!=='TWD'?`<span class="ccy-badge">${ccy}</span>`:'';
     const twdHint=ccy!=='TWD'?`<span style="color:var(--text3);font-size:10px">≈${fmt(toTWD(t.amount,ccy))}</span>`:'';
     html+=`<div class="tx-row" onclick="this.classList.toggle('expanded')">
-      <span class="tx-date">${t.date}</span>
+      <span class="tx-date tx-date-full">${t.date}</span><span class="tx-date tx-date-short">${t.date.slice(5)}</span>
       <span class="tx-type-col"><span class="tx-type-badge ${typeCls}">${typeLabel}</span></span>
       <span>${payStr} ${t.category}${noteStr}${ccyBadge}</span>
       <span class="tx-account-col"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${accColor};margin-right:4px"></span>${accName}</span>
