@@ -143,8 +143,6 @@ body { font-family: 'Noto Sans TC', sans-serif; background: var(--bg); color: va
   .tx-row > span:nth-child(3) { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
   .tx-date-full, .tx-date-short { display: none !important; }
   .tx-type-col, .tx-account-col { display: none !important; }
-  .tx-date-full { display: none !important; }
-  .tx-date-short { display: inline !important; }
   .cc-grid { grid-template-columns: 1fr !important; }
   .account-edit-row { grid-template-columns: 28px 1fr auto auto !important; }
 
@@ -1412,7 +1410,7 @@ function renderTxRows(container,txs,showDateSep=false){
     const amtDisplay=fmtCcy(t.amount, ccy);
     const ccyBadge=ccy!=='TWD'?`<span class="ccy-badge">${ccy}</span>`:'';
     const twdHint=ccy!=='TWD'?`<span style="color:var(--text3);font-size:10px">≈${fmt(toTWD(t.amount,ccy))}</span>`:'';
-    html+=`<div class="tx-row" onclick="this.classList.toggle('expanded')">
+    html+=`<div class="tx-row${showDateSep?' has-date-sep':''}" onclick="this.classList.toggle('expanded')">
       <span class="tx-date tx-date-full">${t.date}</span><span class="tx-date tx-date-short">${t.date.slice(5)}</span>
       <span class="tx-type-col"><span class="tx-type-badge ${typeCls}">${typeLabel}</span></span>
       <span>${payStr} ${t.category}${noteStr}${ccyBadge}</span>
